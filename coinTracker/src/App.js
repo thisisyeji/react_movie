@@ -1,109 +1,86 @@
 import { useState, useEffect } from 'react';
+import axios from 'axios';
 
-function MinutesToHours() {
+function App() {
+	const [Loading, setLoading] = useState(true);
+	const [Coins, setCoins] = useState([]);
 	const [Amount, setAmount] = useState(0);
+	const [Index, setIndex] = useState(0);
 	const [Inverted, setInverted] = useState(false);
 
 	const onChange = (event) => setAmount(event.target.value);
-
-	const reset = () => setAmount(0);
-	const onFlip = () => {
-		reset();
-		setInverted((current) => !current);
-	};
-
-	return (
-		<div>
-			<div>
-				<label htmlFor='minutes'>Minutes</label>
-				<input
-					value={Inverted ? Amount * 60 : Amount}
-					id='minutes'
-					type='number'
-					placeholder='Minutes'
-					onChange={onChange}
-					disabled={Inverted}
-				/>
-			</div>
-
-			<div>
-				<label htmlFor='hours'>Hours</label>
-				<input
-					value={Inverted ? Amount : Math.round(Amount / 60)}
-					id='hours'
-					type='number'
-					placeholder='Hours'
-					disabled={!Inverted}
-					onChange={onChange}
-				/>
-			</div>
-			<button onClick={reset}>Reset</button>
-			<button onClick={onFlip}>{Inverted ? 'Turn back' : 'Invert'}</button>
-		</div>
-	);
-}
-
-function KmToMiles() {
-	const [Amount, setAmount] = useState(0);
-	const [Inverted, setInverted] = useState(false);
-
-	const onChange = (event) => setAmount(event.target.value);
+	const onSelect = (event) => setIndex(event.target.value);
 	const reset = () => setAmount(0);
 	const invert = () => {
 		reset();
 		setInverted((current) => !current);
 	};
 
-	return (
-		<div>
-			<div>
-				<label htmlFor='km'>Km</label>
-				<input
-					value={Inverted ? (Amount * 1.609).toFixed(6) : Amount}
-					type='number'
-					id='km'
-					placeholder='Km'
-					onChange={onChange}
-					disabled={Inverted}
-				/>
-			</div>
-
-			<div>
-				<label htmlFor='miles'>Miles</label>
-				<input
-					value={Inverted ? Amount : (Amount / 1.609).toFixed(6)}
-					type='number'
-					id='miles'
-					placeholder='Miles'
-					onChange={onChange}
-					disabled={!Inverted}
-				/>
-			</div>
-
-			<button onClick={reset}>Reset</button>
-			<button onClick={invert}>{Inverted ? 'Turn back' : 'Invert'}</button>
-		</div>
-	);
-}
-
-function App() {
-	const [Index, setIndex] = useState('xx');
-
-	const onSelect = (event) => setIndex(event.target.value);
+	useEffect(() => {
+		axios.get('https://api.coinpaprika.com/v1/tickers').then((json) => {
+			setCoins(json.data);
+			setLoading(false);
+		});
+	}, []);
 
 	return (
-		<div>
-			<h1>Super Converter</h1>
-			<select value={Index} onChange={onSelect}>
-				<option value='xx'>Select your units</option>
-				<option value='0'>Minutes & Hours</option>
-				<option value='1'>Km & Miles</option>
-			</select>
-			<hr />
-			{Index === 'xx' ? 'Please select your units.' : null}
-			{Index === '0' ? <MinutesToHours /> : null}
-			{Index === '1' ? <KmToMiles /> : null}
-		</div>
+		<>
+			<div>
+				<h1>The Coins! 💰 {Loading ? '' : `(${Coins.length})`}</h1>
+				{Loading ? (
+					<strong>Loading...</strong>
+				) : (
+					<>
+						<select style={{ width: '50%' }} value={Index} onChange={onSelect}>
+							{Coins.map((coin, idx) => (
+								<option key={coin.id} value={idx}>
+									{coin.name} : {coin.quotes.USD.price}
+									{coin.symbol}
+								</option>
+							))}
+						</select>
+						<hr />
+
+						<div>
+							<label>
+								${' '}
+								<input
+									value={
+										Inverted
+											? (Amount * Coins[Index].quotes.USD.price).toFixed(5)
+											: Amount
+									}
+									type='number'
+									style={{ width: 250 }}
+									onChange={onChange}
+									disabled={Inverted}
+								/>{' '}
+							</label>
+							<span style={{ paddingLeft: 10, paddingRight: 10 }}>⇨</span>
+							<label>
+								<input
+									value={
+										Inverted
+											? Amount
+											: (Amount / Coins[Index].quotes.USD.price).toFixed(10)
+									}
+									type='number'
+									style={{ width: 250 }}
+									onChange={onChange}
+									disabled={!Inverted}
+								/>{' '}
+								{Coins[Index].symbol}
+							</label>
+							<br />
+							<button onClick={reset}>Reset</button>
+							<button onClick={invert}>
+								{Inverted ? 'Turn back' : 'Invert'}
+							</button>
+						</div>
+					</>
+				)}
+			</div>
+		</>
 	);
 }
 
