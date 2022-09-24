@@ -8,11 +8,13 @@ function Detail() {
 
 	const getMovie = async () => {
 		const json = await (
-			await fetch(`https://yts.mx/api/v2/list_movies.json?movie_id=${id}`)
+			await fetch(`https://yts.mx/api/v2/movie_details.json?movie_id=${id}`)
 		).json();
-		setMovie(json.data.movies);
+		// console.log(json.data.movie);
+		setMovie(json.data.movie);
 		setLoading(false);
 	};
+
 	useEffect(() => {
 		getMovie();
 	}, []);
@@ -25,9 +27,17 @@ function Detail() {
 					'Loading...'
 				) : (
 					<div>
-						{Movie.map((movie) => {
-							<img src={movie.medium_cover_image} />;
-						})}
+						<img src={Movie.medium_cover_image} alt={Movie.title} />
+						<h2>{Movie.title}</h2>
+						<p>Rating: ⭐️{Movie.rating}</p>
+						<p>Year: {Movie.year}</p>
+						<p>{Movie.description_full}</p>
+
+						<ul>
+							{Movie.genres.map((genre) => (
+								<li key={genre}>{genre}</li>
+							))}
+						</ul>
 					</div>
 				)}
 			</div>

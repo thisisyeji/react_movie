@@ -11,7 +11,6 @@ function Home() {
 				`https://yts.mx/api/v2/list_movies.json?minimum_rating=9&sort_by=year`
 			)
 		).json();
-
 		setMovies(json.data.movies);
 		setLoading(false);
 	};
@@ -32,8 +31,8 @@ function Home() {
 							id={movie.id}
 							coverImg={movie.medium_cover_image}
 							title={movie.title}
-							summary={movie.summary}
-							genres={movie.genres}
+							// summary={movie.summary}
+							// genres={movie.genres}
 						/>
 					))}
 				</div>
